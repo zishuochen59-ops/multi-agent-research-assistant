@@ -1,0 +1,20 @@
+[
+  {
+    "source_id": "S1",
+    "title": "Haoyi Niu Homepage",
+    "url": "https://haoyiniu.github.io/",
+    "text": "Haoyi Niu studies artificial intelligence and scheduling optimization, with particular interest in resource allocation for multi-agent systems and large language model training and inference. Prompt2Length predicts output length in LLM inference. JDPMHF predicts job duration to enhance scheduling in GPU clusters. The research goal is to develop efficient and scalable algorithms for complex large-scale systems."
+  },
+  {
+    "source_id": "S2",
+    "title": "Operating Systems Three Easy Pieces: Scheduling Introduction",
+    "url": "https://pages.cs.wisc.edu/~remzi/OSTEP/cpu-sched.pdf",
+    "text": "A workload describes the jobs running in a system. Scheduling policies can be compared using metrics. Turnaround time is completion time minus arrival time. FIFO is simple to implement, while shortest-job-first can reduce average turnaround time when job durations are known. Performance and fairness can be in tension."
+  },
+  {
+    "source_id": "S3",
+    "title": "Project Design Notes",
+    "url": "local://design-notes",
+    "text": "The project uses a planner, parallel retrieval agents, an analyst, a writer, and a critic. Agents collaborate through a typed shared workspace. The critic checks citation identifiers, and the orchestrator records per-agent latency to make execution observable."
+  }
+]

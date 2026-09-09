@@ -56,6 +56,76 @@ Do not commit API keys. The `.gitignore` excludes `.env` files.
 python -m unittest discover -s tests -v
 ```
 
+## Reproducible demonstration
+
+### English
+
+Run the smallest scheduling example after `pip install -e .`:
+
+```bash
+python examples/demo_scheduling.py
+```
+
+The example has one worker and three tasks. All tasks arrive at time zero, with actual and predicted durations `[8, 2, 1]`. FCFS preserves the input order; SJF uses the predicted durations to run shorter tasks first.
+
+```text
+FCFS order: [1, 2, 3]
+  task 1: start=0, finish=8
+  task 2: start=8, finish=10
+  task 3: start=10, finish=11
+  mean wait: 6.000
+  makespan: 11.000
+
+SJF order: [3, 2, 1]
+  task 3: start=0, finish=1
+  task 2: start=1, finish=3
+  task 1: start=3, finish=11
+  mean wait: 1.333
+  makespan: 11.000
+```
+
+In this example, shortest-first scheduling reduces mean waiting time, while total completion time stays at 11. The simulator uses actual durations only to advance time; the scheduler selects tasks using predicted durations.
+
+Run the complete offline research pipeline and inspect its trace:
+
+```bash
+research-agents "How can prediction improve multi-agent scheduling?" --workers 1 --policy sjf
+python -m json.tool reports/report.trace.json
+```
+
+The offline planner currently creates questions in short-to-long order, so FCFS and SJF may choose the same order for this built-in source packet. The standalone example above puts the long task first to make the scheduling difference visible. Live planner outputs and larger task sets can arrive in other orders.
+
+### 中文
+
+完成 `pip install -e .` 后运行最小调度示例：
+
+```bash
+python examples/demo_scheduling.py
+```
+
+示例包含一个执行名额和三个同时到达的任务。实际时长和预测时长均为 `[8, 2, 1]`。FCFS 保留输入顺序，SJF 根据预测时长让较短任务先执行。
+
+```text
+FCFS 顺序：[1, 2, 3]
+平均等待时间：6.000
+全部任务完成时间：11.000
+
+SJF 顺序：[3, 2, 1]
+平均等待时间：1.333
+全部任务完成时间：11.000
+```
+
+在这个例子中，短任务优先降低了平均等待时间，但全部任务完成时间仍为 11。仿真器只用实际时长推进时间，调度器只能根据预测时长选择任务。
+
+运行完整的离线多 Agent 研究流程并查看追踪记录：
+
+```bash
+research-agents "How can prediction improve multi-agent scheduling?" --workers 1 --policy sjf
+python -m json.tool reports/report.trace.json
+```
+
+当前离线 Planner 默认按短、中、长生成问题，因此在内置示例数据中，FCFS 与 SJF 可能得到相同顺序。上面的独立示例故意把长任务放在最前面，使两种策略的区别清楚可见。Live 模式和更大的任务集合可能产生其他顺序。
+
 ## Scheduling experiment
 
 From the repository root after installation:

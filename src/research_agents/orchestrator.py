@@ -13,21 +13,23 @@ class ResearchOrchestrator:
 
     def run(self, topic: str, sources: list[Source]) -> Workspace:
         workspace = Workspace(topic=topic)
-        questions = PlannerAgent().run(workspace)
-        agents = [RetrievalAgent(index + 1) for index in range(len(questions))]
+        questions = PlannerAgent(self.provider).run(workspace)
+        agents = [RetrievalAgent(index + 1, provider=self.provider) for index in range(len(questions))]
         with ThreadPoolExecutor(max_workers=self.workers) as pool:
             futures = [pool.submit(agent.run, question, sources) for agent, question in zip(agents, questions)]
             for future in futures:
-                question, evidence, event = future.result()
+                question, evidence, note, event = future.result()
                 workspace.evidence[question] = evidence
+                workspace.research_notes[question] = note
                 workspace.events.append(event)
-        AnalystAgent().run(workspace)
+        AnalystAgent(self.provider).run(workspace)
         writer = WriterAgent(self.provider)
         writer.run(workspace)
-        notes = CriticAgent().run(workspace)
+        critic = CriticAgent(self.provider)
+        notes = critic.run(workspace)
         if notes and self.provider:
             writer.run(workspace, notes)
-            CriticAgent().run(workspace)
+            critic.run(workspace)
         return workspace
 
 

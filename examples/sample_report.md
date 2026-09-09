@@ -20,9 +20,9 @@ How can job-duration prediction improve LLM inference scheduling?
 | Agent | Action | Time (ms) |
 |---|---|---:|
 | planner | decomposed topic | 0.00 |
-| researcher-1 | retrieved evidence | 0.09 |
+| researcher-1 | retrieved evidence | 0.10 |
 | researcher-2 | retrieved evidence | 0.04 |
 | researcher-3 | retrieved evidence | 0.03 |
-| analyst | synthesized evidence | 0.00 |
-| writer | wrote report | 0.01 |
+| analyst | synthesized evidence | 0.01 |
+| writer | wrote report | 0.00 |
 | critic | audited citations | 0.03 |

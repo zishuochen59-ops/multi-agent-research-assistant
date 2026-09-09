@@ -22,7 +22,7 @@ flowchart LR
     WR --> O[Markdown report and agent trace]
 ```
 
-The retrieval agents run concurrently. Every piece of evidence keeps its source ID, title, URL, excerpt, and relevance score. The critic checks that the report does not cite unknown sources. The orchestrator records the execution time of every agent.
+The retrieval agents run concurrently. In live mode, the planner, each researcher, the analyst, the writer, and the critic make separate model calls and exchange results through the shared workspace. Every piece of evidence keeps its source ID, title, URL, excerpt, and relevance score. The critic checks that the report does not cite unknown sources. The orchestrator records the execution time of every agent.
 
 ## Quick start
 
@@ -60,7 +60,7 @@ python -m unittest discover -s tests -v
 - Coordination: agents communicate through a typed shared workspace rather than hidden global variables.
 - Parallel scheduling: three retrieval tasks run in a thread pool.
 - Traceability: evidence retains source metadata and the output includes an agent execution trace.
-- Graceful deployment: offline mode is reproducible; live mode can use an external language model.
+- Graceful deployment: offline mode is reproducible; live mode coordinates seven separate model-agent calls before any revision.
 
 ## Current limitations
 

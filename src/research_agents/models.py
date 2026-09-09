@@ -32,6 +32,7 @@ class Workspace:
     topic: str
     questions: list[str] = field(default_factory=list)
     evidence: dict[str, list[Evidence]] = field(default_factory=dict)
+    research_notes: dict[str, str] = field(default_factory=dict)
     synthesis: str = ""
     draft: str = ""
     critique: list[str] = field(default_factory=list)

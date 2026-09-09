@@ -12,7 +12,7 @@ from research_agents.orchestrator import ResearchOrchestrator, save_report
 class PipelineTests(unittest.TestCase):
     def test_retrieval_returns_matching_source(self):
         source = Source("S1", "Scheduling", "https://example.test", "Scheduling improves resource allocation for multi-agent systems.")
-        _, evidence, _ = RetrievalAgent(1).run("How does scheduling improve resource allocation?", [source])
+        _, evidence, _, _ = RetrievalAgent(1).run("How does scheduling improve resource allocation?", [source])
         self.assertEqual(evidence[0].source_id, "S1")
 
     def test_critic_detects_unknown_citation(self):
@@ -30,6 +30,27 @@ class PipelineTests(unittest.TestCase):
             output = Path(directory) / "report.md"
             save_report(workspace, output)
             self.assertIn("Agent Trace", output.read_text())
+
+    def test_live_mode_uses_multiple_model_agents(self):
+        class StubProvider:
+            def __init__(self):
+                self.calls = []
+
+            def complete(self, system, user):
+                self.calls.append(system)
+                if "planner" in system:
+                    return "What is scheduling?\nHow is duration predicted?\nWhat are the limitations?"
+                if "critic" in system:
+                    return "PASS"
+                return "Evidence-based result [S1]"
+
+        provider = StubProvider()
+        sources = [Source("S1", "Scheduling", "https://example.test", "Scheduling predicts duration and allocates resources, but estimates can be wrong.")]
+        workspace = ResearchOrchestrator(provider=provider).run("scheduling", sources)
+        self.assertIn("[S1]", workspace.draft)
+        self.assertGreaterEqual(len(provider.calls), 7)
+        self.assertTrue(any("planner" in call for call in provider.calls))
+        self.assertTrue(any("critic" in call for call in provider.calls))
 
 
 if __name__ == "__main__":

@@ -19,12 +19,18 @@ def main() -> None:
     parser.add_argument("--sources", type=Path, default=Path("examples/sources.json"))
     parser.add_argument("--output", type=Path, default=Path("reports/report.md"))
     parser.add_argument("--live", action="store_true", help="Use an OpenAI-compatible chat-completions API.")
+    parser.add_argument("--workers", type=int, default=3, help="Concurrent researcher slots, not GPU count.")
+    parser.add_argument("--policy", choices=("fcfs", "sjf"), default="fcfs")
     args = parser.parse_args()
+    if args.workers < 1:
+        parser.error("--workers must be positive")
     if args.live and "LLM_API_KEY" not in os.environ:
         parser.error("--live requires LLM_API_KEY")
     provider = OpenAICompatibleProvider() if args.live else None
-    workspace = ResearchOrchestrator(provider=provider).run(args.topic, load_sources(args.sources))
+    workspace = ResearchOrchestrator(provider=provider, workers=args.workers, policy=args.policy).run(args.topic, load_sources(args.sources))
     save_report(workspace, args.output)
+    if provider:
+        args.output.with_suffix(".calls.json").write_text(json.dumps(provider.calls, indent=2), encoding="utf-8")
     print(f"Saved report to {args.output}")
     print("Agents: " + " -> ".join(event.agent for event in workspace.events))
 

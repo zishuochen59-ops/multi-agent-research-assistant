@@ -1,6 +1,8 @@
 import json
 import os
 import urllib.request
+import threading
+import time
 from typing import Protocol
 
 
@@ -15,8 +17,11 @@ class OpenAICompatibleProvider:
         self.base_url = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1").rstrip("/")
         self.api_key = os.environ["LLM_API_KEY"]
         self.model = os.environ.get("LLM_MODEL", "gpt-4.1-mini")
+        self.calls: list[dict] = []
+        self._lock = threading.Lock()
 
     def complete(self, system: str, user: str) -> str:
+        started = time.perf_counter()
         payload = json.dumps({
             "model": self.model,
             "temperature": 0.2,
@@ -32,4 +37,12 @@ class OpenAICompatibleProvider:
         )
         with urllib.request.urlopen(request, timeout=60) as response:
             body = json.load(response)
-        return body["choices"][0]["message"]["content"].strip()
+        text = body["choices"][0]["message"]["content"].strip()
+        usage = body.get("usage") or {}
+        with self._lock:
+            self.calls.append({"model": self.model,
+                               "elapsed_ms": (time.perf_counter() - started) * 1000,
+                               "input_tokens": usage.get("prompt_tokens"),
+                               "output_tokens": usage.get("completion_tokens"),
+                               "output_characters": len(text)})
+        return text

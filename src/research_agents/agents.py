@@ -1,6 +1,5 @@
 import re
 import time
-from collections import Counter
 
 from .models import AgentEvent, Evidence, Source, Workspace
 from .provider import TextProvider
@@ -11,7 +10,10 @@ STOP = {"about", "after", "also", "and", "are", "can", "does", "for", "from", "h
 
 
 def keywords(text: str) -> set[str]:
-    return {word.lower() for word in TOKEN_RE.findall(text) if len(word) > 2 and word.lower() not in STOP}
+    terms = {word.lower() for word in TOKEN_RE.findall(text) if len(word) > 2 and word.lower() not in STOP}
+    for segment in re.findall(r"[\u4e00-\u9fff]+", text):
+        terms.update(segment[i:i + 2] for i in range(len(segment) - 1))
+    return terms
 
 
 class Agent:
@@ -59,7 +61,7 @@ class RetrievalAgent(Agent):
         query = keywords(question)
         matches: list[Evidence] = []
         for source in sources:
-            sentences = re.split(r"(?<=[.!?])\s+", source.text.strip())
+            sentences = re.split(r"(?<=[.!?])\s+|(?<=[。！？])", source.text.strip())
             for sentence in sentences:
                 overlap = query & keywords(sentence)
                 if overlap:
@@ -121,6 +123,7 @@ class WriterAgent(Agent):
             instruction = "Write a concise Markdown research brief. Every factual claim must end with a source marker such as [S1]. Do not invent facts."
             request = f"Topic: {workspace.topic}\n\nEvidence:\n{workspace.synthesis}"
             if revision_notes:
+                request += "\n\nPrevious draft:\n" + workspace.draft
                 request += "\n\nRevise to address:\n- " + "\n- ".join(revision_notes)
             draft = self.provider.complete(instruction, request)
         else:
@@ -154,14 +157,14 @@ class CriticAgent(Agent):
         unknown = cited - known
         if unknown:
             notes.append("Remove unknown citations: " + ", ".join(sorted(unknown)))
-        if known - cited:
-            notes.append("Use or remove uncited evidence: " + ", ".join(sorted(known - cited)))
-        if not cited:
+        if not cited and known:
             notes.append("Add source markers to factual claims.")
         if self.provider:
             semantic = self.provider.complete(
                 "You are a strict research critic. Check whether the report answers the question, stays within the evidence, and states limitations. Return PASS or one concise issue per line.",
-                f"Evidence:\n{workspace.synthesis}\n\nReport:\n{workspace.draft}",
+                f"Question: {workspace.topic}\n\nOriginal excerpts:\n" + "\n".join(
+                    f"[{e.source_id}] {e.excerpt}" for items in workspace.evidence.values() for e in items
+                ) + f"\n\nReport:\n{workspace.draft}",
             )
             if semantic.strip().upper() != "PASS":
                 notes.extend(line.lstrip("-* ").strip() for line in semantic.splitlines() if line.strip())

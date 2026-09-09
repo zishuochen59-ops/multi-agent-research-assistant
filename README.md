@@ -1,5 +1,8 @@
 # Multi-Agent Research Assistant
 
+[![English](https://img.shields.io/badge/Language-English-2563EB)](README.md)
+[![Chinese](https://img.shields.io/badge/Language-Chinese-DC2626)](README.zh-CN.md)
+
 A small, explainable research pipeline in which specialized agents collaborate on an evidence-based brief. It is designed as an undergraduate project exploring multi-agent coordination, task decomposition, parallel execution, shared state, and quality control.
 
 The scheduling extension explores a focused question: **under limited researcher concurrency, how does predicted task length affect waiting time?** It includes a rule-based length proxy, FCFS and predicted-shortest-first (SJF) execution, and a reproducible simulation of duration-prediction errors. This is an AI-assisted undergraduate prototype, not a reproduction of Prompt2Length or JDPMHF and not a GPU scheduler.
@@ -63,7 +66,7 @@ python -m unittest discover -s tests -v
 Run the smallest scheduling example after `pip install -e .`:
 
 ```bash
-python examples/demo_scheduling.py
+python examples/demo_scheduling.py --lang en
 ```
 
 The example has one worker and three tasks. All tasks arrive at time zero, with actual and predicted durations `[8, 2, 1]`. FCFS preserves the input order; SJF uses the predicted durations to run shorter tasks first.
@@ -94,37 +97,6 @@ python -m json.tool reports/report.trace.json
 ```
 
 The offline planner currently creates questions in short-to-long order, so FCFS and SJF may choose the same order for this built-in source packet. The standalone example above puts the long task first to make the scheduling difference visible. Live planner outputs and larger task sets can arrive in other orders.
-
-### 中文
-
-完成 `pip install -e .` 后运行最小调度示例：
-
-```bash
-python examples/demo_scheduling.py
-```
-
-示例包含一个执行名额和三个同时到达的任务。实际时长和预测时长均为 `[8, 2, 1]`。FCFS 保留输入顺序，SJF 根据预测时长让较短任务先执行。
-
-```text
-FCFS 顺序：[1, 2, 3]
-平均等待时间：6.000
-全部任务完成时间：11.000
-
-SJF 顺序：[3, 2, 1]
-平均等待时间：1.333
-全部任务完成时间：11.000
-```
-
-在这个例子中，短任务优先降低了平均等待时间，但全部任务完成时间仍为 11。仿真器只用实际时长推进时间，调度器只能根据预测时长选择任务。
-
-运行完整的离线多 Agent 研究流程并查看追踪记录：
-
-```bash
-research-agents "How can prediction improve multi-agent scheduling?" --workers 1 --policy sjf
-python -m json.tool reports/report.trace.json
-```
-
-当前离线 Planner 默认按短、中、长生成问题，因此在内置示例数据中，FCFS 与 SJF 可能得到相同顺序。上面的独立示例故意把长任务放在最前面，使两种策略的区别清楚可见。Live 模式和更大的任务集合可能产生其他顺序。
 
 ## Scheduling experiment
 

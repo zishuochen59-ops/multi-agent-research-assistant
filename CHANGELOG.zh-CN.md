@@ -5,6 +5,18 @@
 
 本日志根据仓库的真实提交记录整理项目功能变化。以下更新均完成于 2026 年 9 月 9 日。
 
+## 可训练的输出长度基线
+
+提交 [`6bc7dea`](https://github.com/zishuochen59-ops/multi-agent-research-assistant/commit/6bc7dea)
+
+- 新增不依赖第三方库的标准化岭回归基线，根据提示词特征预测相对输出长度。
+- 新增可配置的正态分布异常标签过滤，以及保持长度指令语义的提示词替换增强。
+- 新增包含 28 条中英文记录的确定性合成数据集和留出集评价命令。
+- 通过 `--length-model` 将保存的模型接入研究任务的短任务优先调度。
+- 在研究任务追踪中记录估计器来源，自动化测试由 12 项增加到 15 项。
+
+这是根据 Prompt2Length 公开介绍制作的可检查本科基线，没有实现论文中的 DistilBERT 架构，也没有复现论文报告的基准结果。
+
 ## 文档语言拆分
 
 提交 [`4369baa`](https://github.com/zishuochen59-ops/multi-agent-research-assistant/commit/4369baa)

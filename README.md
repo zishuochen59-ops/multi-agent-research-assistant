@@ -5,7 +5,7 @@
 
 A small, explainable research pipeline in which specialized agents collaborate on an evidence-based brief. It is designed as an undergraduate project exploring multi-agent coordination, task decomposition, parallel execution, shared state, and quality control.
 
-The scheduling extension explores a focused question: **under limited researcher concurrency, how does predicted task length affect waiting time?** It includes a rule-based length proxy, FCFS and predicted-shortest-first (SJF) execution, and a reproducible simulation of duration-prediction errors. This is an AI-assisted undergraduate prototype, not a reproduction of Prompt2Length or JDPMHF and not a GPU scheduler.
+The scheduling extension explores a focused question: **under limited researcher concurrency, how does predicted task length affect waiting time?** It includes a default rule-based estimate, an optional trainable output-length baseline, FCFS and predicted-shortest-first (SJF) execution, and a reproducible simulation of duration-prediction errors. This is an AI-assisted undergraduate prototype, not a reproduction of Prompt2Length or JDPMHF and not a GPU scheduler.
 
 ## Why this project
 
@@ -98,6 +98,23 @@ python -m json.tool reports/report.trace.json
 
 The offline planner currently creates questions in short-to-long order, so FCFS and SJF may choose the same order for this built-in source packet. The standalone example above puts the long task first to make the scheduling difference visible. Live planner outputs and larger task sets can arrive in other orders.
 
+## Train an output-length baseline
+
+The repository now turns three public ideas from [Prompt2Length](https://doi.org/10.1109/AIAHPC66801.2025.11290434) into a small, inspectable learning exercise: filter unusual labels, augment prompts by substituting length-control cues, and predict an output-length interval from the prompt alone. The implementation is standardized ridge regression over transparent text features; it is **not** the paper's DistilBERT architecture or a reproduction of its experiments.
+
+Train the supplied synthetic dataset, then use the saved model for researcher-task scheduling:
+
+```bash
+python -m research_agents.length_model \
+  --data examples/synthetic_length_observations.jsonl \
+  --output reports/length_model.json
+
+research-agents "How can prediction improve multi-agent scheduling?" \
+  --workers 1 --policy sjf --length-model reports/length_model.json
+```
+
+With seed 7, the committed 28-record synthetic dataset produces a 21/7 train/test split. Cue augmentation gives a holdout MAE of 51.085 relative output units and bucket accuracy of 1.000; disabling augmentation gives MAE 58.437 and the same bucket accuracy. These tiny synthetic results verify the experimental path only. They are not evidence of real-world accuracy or improvement over Prompt2Length. A researcher trace records whether `rule-baseline` or `standardized-ridge-baseline` generated each estimate.
+
 ## Scheduling experiment
 
 From the repository root after installation:
@@ -111,7 +128,7 @@ The pipeline submits researcher tasks in FCFS or estimated-length order, respect
 
 Reports have a `.trace.json` sidecar with researcher queue time, service time, task ID, length bucket and policy. Live runs also save `.calls.json` with provider-reported token usage and end-to-end call latency. Missing token counts stay null. API latency includes network and provider-side queuing; it is not isolated GPU inference time. Keys and prompt contents are not included in these logs.
 
-The length heuristic uses question wording only and returns **relative units**, not exact tokens or milliseconds. It is not calibrated and may be inaccurate. The separate simulator studies controlled prediction errors using synthetic durations; it does not evaluate the heuristic's predictive accuracy. See the [experiment design and results](docs/EXPERIMENTS.md) and [project evolution log](CHANGELOG.md).
+Both length estimators use question wording only and return **relative units**, not exact tokens or milliseconds. The ridge model is trained on synthetic labels and is not calibrated to a real provider. The separate simulator studies controlled prediction errors using synthetic durations; it does not establish the estimator's real-world accuracy. See the [experiment design and results](docs/EXPERIMENTS.md) and [project evolution log](CHANGELOG.md).
 
 ## What the experiment demonstrates
 
@@ -129,11 +146,11 @@ The length heuristic uses question wording only and returns **relative units**, 
 - The offline critic validates citation identifiers. The live critic also reviews the original excerpts, but cannot guarantee truth. Unresolved findings are saved in the report after at most one rewrite.
 - The live provider targets the common chat-completions format and may need adaptation for other APIs.
 - Remote API failures still stop the run; retries, persistent checkpoints and per-call role IDs are future work.
-- No live GPU experiment, trained prediction model, answer-quality benchmark or speedup claim is provided.
+- The learned baseline uses a tiny synthetic dataset and hand-designed features; no transformer reproduction, live GPU experiment, answer-quality benchmark or speedup claim is provided.
 
 ## Next experiments
 
-1. Collect real per-role traces and fit a small duration predictor using a held-out test split.
+1. Replace synthetic labels with real per-role output-token traces and evaluate against constant, role-average and rule-based baselines on an untouched test set.
 2. Compare FCFS and SJF on identical prompts, models, evidence, concurrency and token budgets over repeated runs.
 3. Add task dependencies and compare critical-path scheduling with short-task priority.
 4. Evaluate citation support and completeness with and without the critic revision loop.

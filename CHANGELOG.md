@@ -5,6 +5,18 @@
 
 This log records the project's functional evolution from the repository's actual commit history. All entries below were completed on 9 September 2026.
 
+## Trainable output-length baseline
+
+Commit [`6bc7dea`](https://github.com/zishuochen59-ops/multi-agent-research-assistant/commit/6bc7dea)
+
+- Added a dependency-free standardized-ridge baseline that predicts relative output length from prompt features.
+- Added configurable normal-distribution-based label filtering and semantic length-cue substitutions.
+- Added a deterministic 28-record bilingual synthetic dataset and held-out evaluation command.
+- Connected saved models to SJF researcher scheduling through `--length-model`.
+- Added estimator provenance to researcher traces and expanded automated coverage from twelve to fifteen tests.
+
+This is an inspectable undergraduate baseline inspired by the public Prompt2Length description. It does not implement the paper's DistilBERT architecture or reproduce its reported benchmarks.
+
 ## Documentation separation
 
 Commit [`4369baa`](https://github.com/zishuochen59-ops/multi-agent-research-assistant/commit/4369baa)

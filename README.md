@@ -111,7 +111,7 @@ The pipeline submits researcher tasks in FCFS or estimated-length order, respect
 
 Reports have a `.trace.json` sidecar with researcher queue time, service time, task ID, length bucket and policy. Live runs also save `.calls.json` with provider-reported token usage and end-to-end call latency. Missing token counts stay null. API latency includes network and provider-side queuing; it is not isolated GPU inference time. Keys and prompt contents are not included in these logs.
 
-The length heuristic uses question wording only and returns **relative units**, not exact tokens or milliseconds. It is not calibrated and may be inaccurate. The separate simulator studies controlled prediction errors using synthetic durations; it does not evaluate the heuristic's predictive accuracy. See [experiment design and results](docs/EXPERIMENTS.md) and the [Chinese walkthrough](docs/LEARNING_GUIDE_ZH.md).
+The length heuristic uses question wording only and returns **relative units**, not exact tokens or milliseconds. It is not calibrated and may be inaccurate. The separate simulator studies controlled prediction errors using synthetic durations; it does not evaluate the heuristic's predictive accuracy. See the [experiment design and results](docs/EXPERIMENTS.md) and [project evolution log](CHANGELOG.md).
 
 ## What the experiment demonstrates
 

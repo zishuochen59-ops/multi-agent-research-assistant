@@ -3,9 +3,11 @@ import json
 import os
 from pathlib import Path
 
+from .length_model import LengthModel
 from .models import Source
 from .orchestrator import ResearchOrchestrator, save_report
 from .provider import OpenAICompatibleProvider
+from .scheduling import estimate_length
 
 
 def load_sources(path: Path) -> list[Source]:
@@ -21,13 +23,21 @@ def main() -> None:
     parser.add_argument("--live", action="store_true", help="Use an OpenAI-compatible chat-completions API.")
     parser.add_argument("--workers", type=int, default=3, help="Concurrent researcher slots, not GPU count.")
     parser.add_argument("--policy", choices=("fcfs", "sjf"), default="fcfs")
+    parser.add_argument("--length-model", type=Path, help="Optional model created by research_agents.length_model.")
     args = parser.parse_args()
     if args.workers < 1:
         parser.error("--workers must be positive")
     if args.live and "LLM_API_KEY" not in os.environ:
         parser.error("--live requires LLM_API_KEY")
     provider = OpenAICompatibleProvider() if args.live else None
-    workspace = ResearchOrchestrator(provider=provider, workers=args.workers, policy=args.policy).run(args.topic, load_sources(args.sources))
+    length_model = LengthModel.load(args.length_model) if args.length_model else None
+    workspace = ResearchOrchestrator(
+        provider=provider,
+        workers=args.workers,
+        policy=args.policy,
+        length_estimator=length_model.estimate if length_model else estimate_length,
+        estimator_name=length_model.method if length_model else "rule-baseline",
+    ).run(args.topic, load_sources(args.sources))
     save_report(workspace, args.output)
     if provider:
         args.output.with_suffix(".calls.json").write_text(json.dumps(provider.calls, indent=2), encoding="utf-8")

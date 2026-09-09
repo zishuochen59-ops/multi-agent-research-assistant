@@ -1,29 +1,41 @@
+from __future__ import annotations
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict
 import json
 import time
 from pathlib import Path
+from typing import Callable
 
 from .agents import AnalystAgent, CriticAgent, PlannerAgent, RetrievalAgent, WriterAgent
 from .models import Source, Workspace
 from .provider import TextProvider
-from .scheduling import estimate_length, task_order
+from .scheduling import LengthEstimate, estimate_length, task_order
 
 
 class ResearchOrchestrator:
-    def __init__(self, provider: TextProvider | None = None, workers: int = 3, policy: str = "fcfs") -> None:
+    def __init__(
+        self,
+        provider: TextProvider | None = None,
+        workers: int = 3,
+        policy: str = "fcfs",
+        length_estimator: Callable[[str], LengthEstimate] = estimate_length,
+        estimator_name: str = "rule-baseline",
+    ) -> None:
         if workers < 1:
             raise ValueError("workers must be positive")
         task_order([], policy)
         self.provider = provider
         self.workers = workers
         self.policy = policy
+        self.length_estimator = length_estimator
+        self.estimator_name = estimator_name
 
     def run(self, topic: str, sources: list[Source]) -> Workspace:
         workspace = Workspace(topic=topic)
         questions = PlannerAgent(self.provider).run(workspace)
         agents = [RetrievalAgent(index + 1, provider=self.provider) for index in range(len(questions))]
-        estimates = [estimate_length(q) for q in questions]
+        estimates = [self.length_estimator(q) for q in questions]
         order = task_order([e.output_units for e in estimates], self.policy)
         ready = time.perf_counter()
 
@@ -32,7 +44,8 @@ class ResearchOrchestrator:
             result = agents[index].run(questions[index], sources)
             result[3].details.update(task_id=f"research-{index + 1}", queue_ms=wait_ms,
                                      policy=self.policy, length_bucket=estimates[index].bucket,
-                                     estimated_output_units=estimates[index].output_units)
+                                     estimated_output_units=estimates[index].output_units,
+                                     length_estimator=self.estimator_name)
             return index, result
 
         results = {}

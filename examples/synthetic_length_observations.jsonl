@@ -1,0 +1,28 @@
+{"prompt":"Define task scheduling in one sentence.","output_units":24}
+{"prompt":"Briefly explain FCFS.","output_units":34}
+{"prompt":"Give a concise definition of a research agent.","output_units":38}
+{"prompt":"Summarize prediction-aware scheduling.","output_units":55}
+{"prompt":"List three scheduling metrics.","output_units":68}
+{"prompt":"List four roles in a multi-agent workflow.","output_units":82}
+{"prompt":"Explain FCFS with a small example.","output_units":118}
+{"prompt":"Describe how agents share evidence.","output_units":132}
+{"prompt":"Compare FCFS and SJF scheduling.","output_units":158}
+{"prompt":"Explain how prediction error changes queue waiting time.","output_units":184}
+{"prompt":"Discuss task allocation under limited concurrency.","output_units":205}
+{"prompt":"Compare rule-based and learned length estimates with two examples.","output_units":238}
+{"prompt":"Provide a detailed comparison of FCFS and SJF with examples and limitations.","output_units":348}
+{"prompt":"Give a thorough analysis of prediction error, waiting time, and fairness.","output_units":392}
+{"prompt":"Provide a comprehensive explanation of multi-agent coordination, shared state, and quality control.","output_units":445}
+{"prompt":"Analyze in depth how workload prediction could inform resource scheduling and describe its limitations.","output_units":478}
+{"prompt":"用一句话定义任务调度。","output_units":22}
+{"prompt":"简要解释多智能体协作。","output_units":36}
+{"prompt":"简短说明先来先服务策略。","output_units":42}
+{"prompt":"概述预测任务长度的作用。","output_units":58}
+{"prompt":"列出三个任务调度指标。","output_units":72}
+{"prompt":"说明智能体如何通过共享工作区交换证据。","output_units":128}
+{"prompt":"比较先来先服务和短任务优先。","output_units":162}
+{"prompt":"解释预测误差如何影响平均等待时间。","output_units":188}
+{"prompt":"讨论有限并发条件下的任务分配与公平性。","output_units":218}
+{"prompt":"详细比较两种调度策略，并给出示例和局限。","output_units":352}
+{"prompt":"深入分析输出长度预测、排队等待和资源利用率之间的关系。","output_units":408}
+{"prompt":"全面说明多智能体系统中的规划、检索、分析、写作、审查和任务调度。","output_units":462}
